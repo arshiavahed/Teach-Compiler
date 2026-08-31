@@ -31,6 +31,7 @@ type
     procedure ComboInpChange(Sender: TObject);
     procedure BtnRunClick(Sender: TObject);
     procedure BtnUnreadClick(Sender: TObject);
+    procedure BtnIdClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -49,6 +50,11 @@ uses
 
 var
   Inp: TSyntaxLine;
+
+procedure TFClassic.BtnIdClick(Sender: TObject);
+begin
+  MemoOut.Lines.Text:= Inp.SkipId;
+end;
 
 procedure TFClassic.BtnRunClick(Sender: TObject);
 var

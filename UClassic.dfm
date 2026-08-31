@@ -157,6 +157,7 @@ object FClassic: TFClassic
       Align = alTop
       Caption = 'Id'
       TabOrder = 8
+      OnClick = BtnIdClick
       ExplicitLeft = 2
       ExplicitTop = 9
     end

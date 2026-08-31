@@ -23,6 +23,8 @@ type
     // Regular
     function IsUnread: Boolean;
     function SkipUnread: string;
+    function IsId: Boolean;
+    function SkipId: string;
   end;
 implementation
 
@@ -53,6 +55,32 @@ end;
 function TSyntaxLine.IsEof: Boolean;
 begin
   Result := (Pos > High(Text)) or (Text[Pos] = EofCh);
+end;
+
+function TSyntaxLine.IsId: Boolean;
+var
+  p, State: Integer;
+begin
+  SkipUnread;
+  State := 0;
+
+  for p := Pos to High(Text) do
+    case State of
+      0:
+        if Text[p].IsLetter then
+          State := 1
+        else
+          Break;
+
+      1:
+        if Text[p].IsLetterOrDigit then
+          State := 1
+        else
+          Break;
+    end;
+
+  Result := State in [1];
+  if Result then NewPos := p;
 end;
 
 function TSyntaxLine.IsUnread: Boolean;
@@ -139,6 +167,14 @@ procedure TSyntaxLine.SetText(L: string);
 begin
   Clear;
   Text := L + EofCh;
+end;
+
+function TSyntaxLine.SkipId: string;
+begin
+  if IsId then
+    Result := JumpTo(NewPos)
+  else
+    SyntaxError('Invalid id');
 end;
 
 function TSyntaxLine.SkipUnread: string;
