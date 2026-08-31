@@ -37,6 +37,9 @@ type
     function SkipSep(Sep: string): string;
     function IsKey(Key: string): Boolean;
     function SkipKey(Key: string): string;
+    // Advanced
+    function IsNext(Any: string): Boolean;
+    function Skip(Any: string): string;
   end;
 implementation
 
@@ -131,6 +134,27 @@ end;
 function TSyntaxLine.IsKey(Key: string): Boolean;
 begin
   Result := IsId and (Copy(Text, Pos, NewPos - Pos).ToUpper = Key.ToUpper);
+end;
+
+function TSyntaxLine.IsNext(Any: string): Boolean;
+var
+  T: string;
+begin
+  SkipUnread;
+
+  T := Any.ToUpper;
+  if T = '#ID' then
+    Result := IsId
+  else if T = '#INT' then
+    Result := IsInt
+  else if T = '#NUM' then
+    Result := IsNum
+  else if T = '#STR' then
+    Result := IsStr
+  else if (Any.Length >= 2) and (Any[1] = '$') then
+    Result := IsKey(Copy(Any, 2))
+  else
+    Result := IsSep(Any);
 end;
 
 function TSyntaxLine.IsNum: Boolean;
@@ -348,6 +372,27 @@ procedure TSyntaxLine.SetText(L: string);
 begin
   Clear;
   Text := L + EofCh;
+end;
+
+function TSyntaxLine.Skip(Any: string): string;
+var
+  T: string;
+begin
+  T := Any.ToUpper;
+  if T = '#ID' then
+    Result := SkipId
+  else if T = '#INT' then
+    Result := SkipInt.ToString
+  else if T = '#NUM' then
+    Result := SkipNum.ToString
+  else if T = '#STRQUOT' then
+    Result := SkipStrQuot
+  else if T = '#STRVAL' then
+    Result := SkipStrVal
+  else if (Any.Length >= 2) and (Any[1] = '$') then
+    Result := SkipKey(Copy(Any, 2))
+  else
+    Result := SkipSep(Any);
 end;
 
 function TSyntaxLine.SkipId: string;

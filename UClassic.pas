@@ -70,13 +70,13 @@ var
   S: String;
 begin
   // for #id := #int to #int do
-  S := Inp.SkipKey('for');
-  S := S + ' ' + Inp.SkipId;
-  S := S + ' ' + Inp.SkipSep(':= ');
-  S := S + ' ' + Inp.SkipInt.ToString;
-  S := S + ' ' + Inp.SkipKey('to');
-  S := S + ' ' + Inp.SkipInt.ToString;
-  S := S + ' ' + Inp.SkipKey('do');
+  S := Inp.Skip('$for');
+  S := S + ' ' + Inp.Skip('#id');
+  S := S + ' ' + Inp.Skip(':= ');
+  S := S + ' ' + Inp.Skip('#int');
+  S := S + ' ' + Inp.Skip('$to');
+  S := S + ' ' + Inp.Skip('#int');
+  S := S + ' ' + Inp.Skip('$do');
   MemoOut.Lines.Text := S;
 end;
 
