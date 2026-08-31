@@ -72,8 +72,11 @@ type
     function SkipExpVal: Double;
     // Code
     private type
-      TSemanticAction= (saId, saNum, saStr, saAdd, saSub, saMul, saDiv, saOr, saAnd,
-        saLess, saEqual, saGreat, saLessEq, saNotEq, saGreatEq, saNeg, saNot);
+      TSemanticAction = (
+        saId, saNum, saStr, saAdd, saSub, saMul, saDiv, saOr, saAnd,
+        saLess, saEqual, saGreat, saLessEq, saNotEq, saGreatEq, saNeg, saNot, saCopy,
+        saThen, saElse, saTarget
+      );
     private
       SS: TStackRec<String>;
       Codes: TCodeList;
@@ -82,6 +85,9 @@ type
       procedure DoAction(Act: TSemanticAction; TokenVal: string= '');
     public
       procedure SkipExp;
+      procedure SkipStatement;
+      procedure SkipAssign;
+      procedure SkipIf;
       function SkipCodes: TCodeList;
     end;
 implementation
@@ -115,6 +121,7 @@ end;
 procedure TSyntaxLine.DoAction(Act: TSemanticAction; TokenVal: String);
 var
   L, R, Temp: String;
+  P1, P2: Integer;
 begin
   case Act of
     saId, saNum, saStr:
@@ -132,6 +139,29 @@ begin
         Temp:= NewTemp;
         Codes.Add(TokenVal, SS.Pop, '', Temp);
         SS.Push(Temp);
+      end;
+    saCopy:
+      begin
+        R := SS.Pop;
+        L := SS.Pop;
+        Codes.Add(':=', R, '', L);
+      end;
+
+    saThen:
+      begin
+        P1 := Codes.Add('jf', SS.Pop, '', '');
+        SS.Push(P1.ToString);
+      end;
+
+    saTarget:
+      Codes[SS.Pop.ToInteger].Target := Length(Codes).ToString;
+
+    saElse:
+      begin
+        P1 := SS.Pop.ToInteger;
+        P2 := Codes.Add('j', '', '', '');
+        SS.Push(P2.ToString);
+        Codes[P1].Target := Length(Codes).ToString;
       end;
   end;
 end;
@@ -475,11 +505,19 @@ begin
     Result := SkipSep(Any);
 end;
 
+procedure TSyntaxLine.SkipAssign;
+begin
+  DoAction(saId, SkipId);
+  SkipSep(':=');
+  SkipExp;
+  DoAction(saCopy, ':=');
+end;
+
 function TSyntaxLine.SkipCodes: TCodeList;
 begin
   Codes := nil;
   TempNo := 0;
-  SkipExp;
+  SkipStatement;
   Result := Codes;
 end;
 
@@ -849,6 +887,31 @@ begin
     SyntaxError('Invalid id');
 end;
 
+procedure TSyntaxLine.SkipIf;
+
+  procedure SkipIf1;
+  begin
+    if IsKey('else') then
+    begin
+      SkipKey('else');
+      DoAction(saElse);
+      SkipStatement;
+      DoAction(saTarget);
+    end
+    else
+      { null };
+      DoAction(saTarget);
+  end;
+
+begin
+  SkipKey('if');
+  SkipExp;
+  SkipKey('then');
+  DoAction(saThen);
+  SkipStatement;
+  SkipIf1;
+end;
+
 function TSyntaxLine.SkipInt: Integer;
 begin
   if IsInt then
@@ -955,6 +1018,18 @@ function TSyntaxLine.SkipSPNV: string;
 begin
   Result := '';
   SkipS;
+end;
+
+procedure TSyntaxLine.SkipStatement;
+begin
+  case WhichIs(['$if', '#id']) of
+    0:
+      SkipIf;
+    1:
+      SkipAssign;
+  else
+    SyntaxError('Statement expected: if , id');
+  end;
 end;
 
 function TSyntaxLine.SkipStrQuot: string;

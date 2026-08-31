@@ -192,9 +192,9 @@ object FClassic: TFClassic
     object MemoInp: TMemo
       Left = 1
       Top = 1
-      Width = 876
-      Height = 286
-      Align = alTop
+      Width = 432
+      Height = 570
+      Align = alLeft
       Color = clSkyBlue
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -209,10 +209,10 @@ object FClassic: TFClassic
       WordWrap = False
     end
     object MemoOut: TMemo
-      Left = 1
-      Top = 287
-      Width = 876
-      Height = 284
+      Left = 433
+      Top = 1
+      Width = 444
+      Height = 570
       Align = alClient
       Color = clMoneyGreen
       Font.Charset = DEFAULT_CHARSET
@@ -226,6 +226,10 @@ object FClassic: TFClassic
       ScrollBars = ssVertical
       TabOrder = 1
       WordWrap = False
+      ExplicitLeft = 1
+      ExplicitTop = 287
+      ExplicitWidth = 876
+      ExplicitHeight = 284
     end
   end
 end
