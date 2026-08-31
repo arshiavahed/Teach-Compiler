@@ -25,6 +25,8 @@ type
     function SkipUnread: string;
     function IsId: Boolean;
     function SkipId: string;
+    function IsInt: Boolean;
+    function SkipInt: Integer;
   end;
 implementation
 
@@ -80,6 +82,39 @@ begin
     end;
 
   Result := State in [1];
+  if Result then NewPos := p;
+end;
+
+function TSyntaxLine.IsInt: Boolean;
+var
+  p, State: Integer;
+begin
+  SkipUnread;
+  State := 0;
+
+  for p := Pos to High(Text) do
+    case State of
+      0:
+        if Text[p] in ['+', '-'] then
+          State := 1
+        else if Text[p].IsDigit then
+          State := 2
+        else
+          Break;
+
+      1:
+        if Text[p].IsDigit then
+          State := 2
+        else
+          Break;
+      2:
+        if Text[p].IsDigit then
+          State := 2
+        else
+          Break;
+    end;
+
+  Result := State in [2];
   if Result then NewPos := p;
 end;
 
@@ -175,6 +210,14 @@ begin
     Result := JumpTo(NewPos)
   else
     SyntaxError('Invalid id');
+end;
+
+function TSyntaxLine.SkipInt: Integer;
+begin
+  if IsInt then
+    Result := JumpTo(NewPos).ToInteger
+  else
+    SyntaxError('Invalid integer');
 end;
 
 function TSyntaxLine.SkipUnread: string;
