@@ -113,6 +113,7 @@ object FClassic: TFClassic
       Align = alTop
       Caption = 'Irregular'
       TabOrder = 4
+      OnClick = BtnIrregularClick
       ExplicitLeft = 2
       ExplicitTop = 9
     end

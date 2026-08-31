@@ -32,6 +32,11 @@ type
     function IsStr: Boolean;
     function SkipStrQuot: string;
     function SkipStrVal: string;
+    // Irregular
+    function IsSep(Sep: string): Boolean;
+    function SkipSep(Sep: string): string;
+    function IsKey(Key: string): Boolean;
+    function SkipKey(Key: string): string;
   end;
 implementation
 
@@ -123,6 +128,11 @@ begin
   if Result then NewPos := p;
 end;
 
+function TSyntaxLine.IsKey(Key: string): Boolean;
+begin
+  Result := IsId and (Copy(Text, Pos, NewPos - Pos).ToUpper = Key.ToUpper);
+end;
+
 function TSyntaxLine.IsNum: Boolean;
 var
   p, State: Integer;
@@ -187,6 +197,16 @@ begin
   Result := State in [2, 4, 7];
   if Result then
     NewPos := p;
+end;
+
+function TSyntaxLine.IsSep(Sep: string): Boolean;
+begin
+  SkipUnread;
+
+  Result := Copy(Text, Pos, Sep.Length).ToUpper = Sep.ToUpper;
+
+  if Result then
+    NewPos := Pos + Sep.Length;
 end;
 
 function TSyntaxLine.IsStr: Boolean;
@@ -346,12 +366,28 @@ begin
     SyntaxError('Invalid integer');
 end;
 
+function TSyntaxLine.SkipKey(Key: string): string;
+begin
+  if IsKey(Key) then
+    Result := JumpTo(NewPos)
+  else
+    SyntaxError('"' + Key + '" Expected');
+end;
+
 function TSyntaxLine.SkipNum: Double;
 begin
   if IsNum then
     Result := JumpTo(NewPos).ToDouble
   else
     SyntaxError('Invalid number');
+end;
+
+function TSyntaxLine.SkipSep(Sep: string): string;
+begin
+  if IsSep(Sep) then
+    Result := JumpTo(NewPos)
+  else
+    SyntaxError('"' + Sep + '" Expected');
 end;
 
 function TSyntaxLine.SkipStrQuot: string;

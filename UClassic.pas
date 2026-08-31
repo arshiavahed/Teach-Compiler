@@ -35,6 +35,7 @@ type
     procedure BtnIntClick(Sender: TObject);
     procedure BtnNumClick(Sender: TObject);
     procedure BtnStrClick(Sender: TObject);
+    procedure BtnIrregularClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -62,6 +63,21 @@ end;
 procedure TFClassic.BtnIntClick(Sender: TObject);
 begin
   MemoOut.Lines.Text:= Inp.SkipInt.ToString;
+end;
+
+procedure TFClassic.BtnIrregularClick(Sender: TObject);
+var
+  S: String;
+begin
+  // for #id := #int to #int do
+  S := Inp.SkipKey('for');
+  S := S + ' ' + Inp.SkipId;
+  S := S + ' ' + Inp.SkipSep(':= ');
+  S := S + ' ' + Inp.SkipInt.ToString;
+  S := S + ' ' + Inp.SkipKey('to');
+  S := S + ' ' + Inp.SkipInt.ToString;
+  S := S + ' ' + Inp.SkipKey('do');
+  MemoOut.Lines.Text := S;
 end;
 
 procedure TFClassic.BtnNumClick(Sender: TObject);
