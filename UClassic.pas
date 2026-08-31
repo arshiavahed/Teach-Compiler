@@ -185,7 +185,8 @@ end;
 
 procedure TFClassic.BtnTranslatorClick(Sender: TObject);
 begin
-  MemoOut.Lines.Text:= 'Depth = ' + Inp.SkipDepth.ToString;
+  // MemoOut.Lines.Text:= 'Depth = ' + Inp.SkipDepth.ToString;
+  MemoOut.Lines.Text:= 'ExpVal = '+ Inp.SkipExpVal.ToString;
 end;
 
 procedure TFClassic.BtnUnreadClick(Sender: TObject);

@@ -59,6 +59,7 @@ type
     function SkipSPNV: string;
     // Translator
     function SkipDepth: Integer;
+    function SkipExpVal: Double;
   end;
 implementation
 
@@ -489,6 +490,128 @@ function TSyntaxLine.SkipDepth: Integer;
 begin
   SkipS;
   Result := SS.Pop;
+end;
+
+function TSyntaxLine.SkipExpVal: Double;
+
+procedure SkipA; forward;
+procedure SkipA1; forward;
+procedure SkipM; forward;
+procedure SkipM1; forward;
+procedure SkipP; forward;
+
+type
+  TSemanticStack = TStackRec<Double>;
+  TSemanticAction = (saAdd, saSub, saMul, saDiv, saNeg, saNum);
+
+var
+  SS: TSemanticStack;
+
+procedure DoAction(Act: TSemanticAction; TokenVal: Double = 0);
+var
+  L, R: Double;
+begin
+  case Act of
+    saAdd:
+      SS.Push(SS.Pop+ SS.Pop);
+    saSub:
+      begin
+        R:= SS.Pop;
+        L:= SS.Pop;
+        SS.Push(L- R);
+      end;
+    saMul:
+      SS.Push(SS.Pop* SS.Pop);
+    saDiv:
+      begin
+        R:= SS.Pop;
+        L:= SS.Pop;
+        SS.Push(L/ R);
+      end;
+    saNeg:
+      SS.Push(-SS.Pop);
+    saNum:
+      SS.Push(TokenVal);
+  end;
+end;
+
+procedure SkipA;
+begin
+    SkipM;
+    SkipA1;
+end;
+
+procedure SkipA1;
+begin
+    if IsSep('+') then
+    begin
+        Skip('+');
+        SkipM;
+        DoAction(saAdd);
+        SkipA1;
+    end
+    else if IsSep('-') then
+    begin
+        Skip('-');
+        SkipM;
+        DoAction(saSub);
+        SkipA1;
+    end
+    else
+        { null };
+end;
+
+procedure SkipM;
+begin
+    SkipP;
+    SkipM1;
+end;
+
+procedure SkipM1;
+begin
+    if IsSep('*') then
+    begin
+        Skip('*');
+        SkipP;
+        DoAction(saMul);
+        SkipM1;
+    end
+    else if IsSep('/') then
+    begin
+        Skip('/');
+        SkipP;
+        DoAction(saDiv);
+        SkipM1;
+    end
+    else
+        { null };
+end;
+
+procedure SkipP;
+begin
+    case WhichIs(['-', '(', '#num']) of
+        0:
+            begin
+                Skip('-');
+                SkipP;
+                DoAction(saNeg);
+            end;
+        1:
+            begin
+                Skip('(');
+                SkipA;
+                Skip(')');
+            end;
+        2:
+            DoAction(saNum, SkipNum);
+    else
+        SyntaxError('" - , ( , num expected"');
+    end;
+end;
+
+begin
+  SkipA;
+  Result:= SS.Pop;
 end;
 
 function TSyntaxLine.SkipId: string;
