@@ -38,6 +38,7 @@ type
     procedure BtnIrregularClick(Sender: TObject);
     procedure BtnDecisionClick(Sender: TObject);
     procedure BtnParserClick(Sender: TObject);
+    procedure BtnTranslatorClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -180,6 +181,11 @@ end;
 procedure TFClassic.BtnStrClick(Sender: TObject);
 begin
   MemoOut.Lines.Text:= Inp.SkipStrQuot;
+end;
+
+procedure TFClassic.BtnTranslatorClick(Sender: TObject);
+begin
+  MemoOut.Lines.Text:= 'Depth = ' + Inp.SkipDepth.ToString;
 end;
 
 procedure TFClassic.BtnUnreadClick(Sender: TObject);

@@ -80,6 +80,7 @@ object FClassic: TFClassic
       Align = alTop
       Caption = 'Translator'
       TabOrder = 1
+      OnClick = BtnTranslatorClick
       ExplicitLeft = 2
       ExplicitTop = 9
     end

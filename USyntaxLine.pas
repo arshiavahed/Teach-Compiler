@@ -7,6 +7,15 @@ uses Dialogs, SysUtils, IOUtils, Character, Types, Generics.Collections;
 type
   TStrList = array of string;
 
+  TStackRec<T> = record
+    Stk: TStack<T>;
+    class operator Initialize(out Dest: TStackRec<T>);
+    class operator Finalize(var Dest: TStackRec<T>);
+    procedure Push(const Value: T); inline;
+    function Pop: T; inline;
+    function Peek: T; inline;
+  end;
+
   TSyntaxLine = record
   private const
     EofCh = #1;
@@ -48,8 +57,12 @@ type
     // Parser
     function SkipSXY: string;
     function SkipSPNV: string;
+    // Translator
+    function SkipDepth: Integer;
   end;
 implementation
+
+uses Math;
 
 { TSyntaxLine }
 
@@ -408,6 +421,76 @@ begin
     Result := SkipSep(Any);
 end;
 
+function TSyntaxLine.SkipDepth: Integer;
+
+  procedure SkipS; forward;
+  procedure SkipL; forward;
+  procedure SkipL1; forward;
+
+  type
+  TSemanticStack = TStackRec<Integer>;
+  TSemanticAction = (saZero, saInc, saMax);
+
+  var
+  SS: TSemanticStack;
+
+  procedure DoAction(Act: TSemanticAction);
+  begin
+    case Act of
+      saZero:
+        SS.Push(0);
+      saInc:
+        SS.Push(SS.Pop + 1);
+      saMax:
+        SS.Push(Max(SS.Pop, SS.Pop));
+    end;
+  end;
+
+  procedure SkipS;
+  begin
+    case WhichIs(['(', 'a']) of
+      0:
+        begin
+          Skip('(');
+          SkipL;
+          Skip(')');
+          DoAction(saInc);
+        end;
+
+      1:
+        begin
+          Skip('a');
+          DoAction(saZero);
+        end;
+    else
+      SyntaxError('"( , a" expected')
+    end;
+  end;
+
+  procedure SkipL;
+  begin
+    SkipS;
+    SkipL1;
+  end;
+
+  procedure SkipL1;
+  begin
+    if IsNext(',') then
+    begin
+      Skip(',');
+      SkipS;
+      DoAction(saMax);
+      SkipL1;
+    end
+    else
+      { null };
+  end;
+
+begin
+  SkipS;
+  Result := SS.Pop;
+end;
+
 function TSyntaxLine.SkipId: string;
 begin
   if IsId then
@@ -550,33 +633,33 @@ function TSyntaxLine.SkipSXY: string;
     SkipY;
   end;
 
-procedure SkipX;
-begin
-  if IsNext('a') then
+  procedure SkipX;
   begin
-    Result:= Result + Skip('a');
-    SkipX;
-  end
-  else
-    { null };
-end;
+    if IsNext('a') then
+    begin
+      Result:= Result + Skip('a');
+      SkipX;
+    end
+    else
+      { null };
+  end;
 
-procedure SkipY;
-begin
-  if IsNext('b') then
+  procedure SkipY;
   begin
-    Result:= Result + Skip('b');
-    SkipY;
+    if IsNext('b') then
+    begin
+      Result:= Result + Skip('b');
+      SkipY;
+      SkipS;
+    end
+    else
+      { null };
+  end;
+
+  begin
+    Result := '';
     SkipS;
-  end
-  else
-    { null };
-end;
-
-begin
-  Result := '';
-  SkipS;
-end;
+  end;
 
 function TSyntaxLine.SkipUnread: string;
 begin
@@ -607,6 +690,33 @@ begin
   for i := 0 to High(L) do
     if IsNext(L[i]) then
       Exit(i);
+end;
+
+{ TStackRec<T> }
+
+class operator TStackRec<T>.Finalize(var Dest: TStackRec<T>);
+begin
+  Dest.Stk.Free;
+end;
+
+class operator TStackRec<T>.Initialize(out Dest: TStackRec<T>);
+begin
+  Dest.Stk := TStack<T>.Create;
+end;
+
+function TStackRec<T>.Peek: T;
+begin
+  Result := Stk.Peek;
+end;
+
+function TStackRec<T>.Pop: T;
+begin
+  Result := Stk.Pop;
+end;
+
+procedure TStackRec<T>.Push(const Value: T);
+begin
+  Stk.Push(Value);
 end;
 
 end.
