@@ -135,6 +135,7 @@ object FClassic: TFClassic
       Align = alTop
       Caption = 'Num'
       TabOrder = 6
+      OnClick = BtnNumClick
       ExplicitLeft = 2
       ExplicitTop = 9
     end

@@ -33,6 +33,7 @@ type
     procedure BtnUnreadClick(Sender: TObject);
     procedure BtnIdClick(Sender: TObject);
     procedure BtnIntClick(Sender: TObject);
+    procedure BtnNumClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -60,6 +61,11 @@ end;
 procedure TFClassic.BtnIntClick(Sender: TObject);
 begin
   MemoOut.Lines.Text:= Inp.SkipInt.ToString;
+end;
+
+procedure TFClassic.BtnNumClick(Sender: TObject);
+begin
+  MemoOut.Lines.Text:= Inp.SkipNum.ToString;
 end;
 
 procedure TFClassic.BtnRunClick(Sender: TObject);

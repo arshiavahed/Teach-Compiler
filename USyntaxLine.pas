@@ -27,6 +27,8 @@ type
     function SkipId: string;
     function IsInt: Boolean;
     function SkipInt: Integer;
+    function IsNum: Boolean;
+    function SkipNum: Double;
   end;
 implementation
 
@@ -116,6 +118,72 @@ begin
 
   Result := State in [2];
   if Result then NewPos := p;
+end;
+
+function TSyntaxLine.IsNum: Boolean;
+var
+  p, State: Integer;
+begin
+  SkipUnread;
+  State := 0;
+
+  for p := Pos to High(Text) do
+    case State of
+      0:
+        if Text[p] in ['+', '-'] then
+          State := 1
+        else if Text[p].IsDigit then
+          State := 2
+        else
+          Break;
+      1:
+        if Text[p].IsDigit then
+          State := 2
+        else
+          Break;
+      2:
+        if Text[p].IsDigit then
+          State := 2
+        else if Text[p] = '.' then
+          State := 3
+        else if Text[p].ToUpper = 'E' then
+          State := 5
+        else
+          Break;
+      3:
+        if Text[p].IsDigit then
+          State := 4
+        else
+          Break;
+      4:
+        if Text[p].IsDigit then
+          State := 4
+        else if Text[p].ToUpper = 'E' then
+          State := 5
+        else
+          Break;
+      5:
+        if Text[p] in ['+', '-'] then
+          State := 6
+        else if Text[p].IsDigit then
+          State := 7
+        else
+          Break;
+      6:
+        if Text[p].IsDigit then
+          State := 7
+        else
+          Break;
+      7:
+        if Text[p].IsDigit then
+          State := 7
+        else
+          Break;
+    end;
+
+  Result := State in [2, 4, 7];
+  if Result then
+    NewPos := p;
 end;
 
 function TSyntaxLine.IsUnread: Boolean;
@@ -218,6 +286,14 @@ begin
     Result := JumpTo(NewPos).ToInteger
   else
     SyntaxError('Invalid integer');
+end;
+
+function TSyntaxLine.SkipNum: Double;
+begin
+  if IsNum then
+    Result := JumpTo(NewPos).ToDouble
+  else
+    SyntaxError('Invalid number');
 end;
 
 function TSyntaxLine.SkipUnread: string;
