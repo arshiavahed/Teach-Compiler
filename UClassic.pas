@@ -4,10 +4,32 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls;
 
 type
   TFClassic = class(TForm)
+    PanelTop: TPanel;
+    PanelLeft: TPanel;
+    PanelClient: TPanel;
+    MemoInp: TMemo;
+    MemoOut: TMemo;
+    BtnSave: TButton;
+    BtnRun: TButton;
+    ComboInp: TComboBox;
+    BtnCode: TButton;
+    BtnTranslator: TButton;
+    BtnParser: TButton;
+    BtnDecision: TButton;
+    BtnIrregular: TButton;
+    BtnStr: TButton;
+    BtnNum: TButton;
+    BtnInt: TButton;
+    BtnId: TButton;
+    BtnUnread: TButton;
+    procedure FormActivate(Sender: TObject);
+    procedure BtnSaveClick(Sender: TObject);
+    procedure ComboInpChange(Sender: TObject);
+    procedure BtnRunClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -20,5 +42,67 @@ var
 implementation
 
 {$R *.dfm}
+
+uses
+  USyntaxLine, IOUtils;
+
+var
+  Inp: TSyntaxLine;
+
+procedure TFClassic.BtnRunClick(Sender: TObject);
+var
+  F: String;
+begin
+  F := UpperCase(ComboInp.Text);
+  if F = 'UNREAD.TXT' then
+    BtnUnread.Click
+  else if F = 'INT.TXT' then
+    BtnInt.Click
+  else if F = 'ID.TXT' then
+    BtnId.Click
+  else if F = 'NUM.TXT' then
+    BtnNum.Click
+  else if F = 'STR.TXT' then
+    BtnStr.Click
+  else if F = 'IRREGULAR.TXT' then
+    BtnIrregular.Click
+  else if F = 'DECISION.TXT' then
+    BtnDecision.Click
+  else if F = 'PARSER.TXT' then
+    BtnParser.Click
+  else if F = 'TRANSLATOR.TXT' then
+    BtnTranslator.Click
+  else if F = 'CODE.TXT' then
+    BtnCode.Click;
+end;
+
+procedure TFClassic.BtnSaveClick(Sender: TObject);
+begin
+  MemoInp.Lines.SaveToFile(ComboInp.Text);
+  Inp.LoadFile(ComboInp.Text);
+end;
+
+procedure TFClassic.ComboInpChange(Sender: TObject);
+begin
+  MemoInp.Lines.LoadFromFile(ComboInp.Text);
+  Inp.LoadFile(ComboInp.Text);
+end;
+
+procedure TFClassic.FormActivate(Sender: TObject);
+var
+  i: Integer;
+  F: TArray<string>;
+begin
+  F := TDirectory.GetFiles(TDirectory.GetCurrentDirectory, '*.txt');
+  for i := 0 to High(F) do
+    F[i] := TPath.GetFileName(F[i]);
+
+  ComboInp.Items.Clear;
+  ComboInp.Items.AddStrings(F);
+  ComboInp.ItemIndex := 0;
+
+  MemoInp.Lines.LoadFromFile(ComboInp.Text);
+  Inp.LoadFile(ComboInp.Text);
+end;
 
 end.
