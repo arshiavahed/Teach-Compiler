@@ -91,6 +91,7 @@ object FClassic: TFClassic
       Align = alTop
       Caption = 'Parser'
       TabOrder = 2
+      OnClick = BtnParserClick
       ExplicitLeft = 2
       ExplicitTop = 9
     end

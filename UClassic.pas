@@ -37,6 +37,7 @@ type
     procedure BtnStrClick(Sender: TObject);
     procedure BtnIrregularClick(Sender: TObject);
     procedure BtnDecisionClick(Sender: TObject);
+    procedure BtnParserClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -135,6 +136,12 @@ end;
 procedure TFClassic.BtnNumClick(Sender: TObject);
 begin
   MemoOut.Lines.Text:= Inp.SkipNum.ToString;
+end;
+
+procedure TFClassic.BtnParserClick(Sender: TObject);
+begin
+  MemoOut.Lines.Text:= Inp.SkipSXY;
+  // MemoOut.Lines.Text:= Inp.SkipSPNV;
 end;
 
 procedure TFClassic.BtnRunClick(Sender: TObject);

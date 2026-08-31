@@ -45,6 +45,9 @@ type
     // Advanced
     function WhichIs(L: TStrList): Integer;
     function InList(L: TStrList): Boolean;
+    // Parser
+    function SkipSXY: string;
+    function SkipSPNV: string;
   end;
 implementation
 
@@ -445,6 +448,82 @@ begin
     SyntaxError('"' + Sep + '" Expected');
 end;
 
+function TSyntaxLine.SkipSPNV: string;
+
+  procedure SkipS; forward;
+  procedure SkipP; forward;
+  procedure SkipN; forward;
+  procedure SkipV; forward;
+
+  procedure SkipS;
+  begin
+    case WhichIs(['d', 'e', 'b', 'c']) of
+      0, 1:
+        begin
+          SkipP;
+          Result := Result + Skip('a');
+          SkipN;
+        end;
+
+      2:
+        begin
+          SkipV;
+          SkipP;
+        end;
+
+      3:
+        Result := Result + Skip('c');
+
+    else
+      SyntaxError('"d, e, b, c" Expected');
+    end;
+  end;
+
+  procedure SkipP;
+  begin
+    case WhichIs(['d', 'e']) of
+      0:
+        begin
+          Result := Result + Skip('d');
+          SkipN;
+          SkipP;
+        end;
+
+      1:
+        Result := Result + Skip('e');
+
+    else
+      SyntaxError('"d, e" Expected');
+    end;
+  end;
+
+  procedure SkipN;
+  begin
+    case WhichIs(['b', 'd', 'e', EofCh]) of
+      0:
+        begin
+          SkipV;
+          Result := Result + Skip('a');
+        end;
+
+      1..3:
+        { null };
+
+    else
+      SyntaxError('"b, d, e, Eof" Expected');
+    end;
+  end;
+
+  procedure SkipV;
+  begin
+    Result := Result + Skip('b');
+  end;
+
+begin
+  Result := '';
+  SkipS;
+end;
+
 function TSyntaxLine.SkipStrQuot: string;
 begin
   if IsStr then
@@ -456,6 +535,47 @@ end;
 function TSyntaxLine.SkipStrVal: string;
 begin
   { TODO : For Future }
+end;
+
+function TSyntaxLine.SkipSXY: string;
+
+  procedure SkipS; forward;
+  procedure SkipX; forward;
+  procedure SkipY; forward;
+
+  procedure SkipS;
+  begin
+    SkipX;
+    Result := Result + Skip('d');
+    SkipY;
+  end;
+
+procedure SkipX;
+begin
+  if IsNext('a') then
+  begin
+    Result:= Result + Skip('a');
+    SkipX;
+  end
+  else
+    { null };
+end;
+
+procedure SkipY;
+begin
+  if IsNext('b') then
+  begin
+    Result:= Result + Skip('b');
+    SkipY;
+    SkipS;
+  end
+  else
+    { null };
+end;
+
+begin
+  Result := '';
+  SkipS;
 end;
 
 function TSyntaxLine.SkipUnread: string;

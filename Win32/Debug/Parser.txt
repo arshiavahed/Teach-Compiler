@@ -1,0 +1,10 @@
+// SXY
+    adbdad
+    aadbbadd
+    dbdb    // Invalid
+
+/* SPNV
+    dbaeeaba
+    bdbaadbae
+    baadaed  // Invalid
+*/
