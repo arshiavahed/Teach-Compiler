@@ -75,7 +75,8 @@ type
       TSemanticAction = (
         saId, saNum, saStr, saAdd, saSub, saMul, saDiv, saOr, saAnd,
         saLess, saEqual, saGreat, saLessEq, saNotEq, saGreatEq, saNeg, saNot, saCopy,
-        saThen, saElse, saTarget
+        saThen, saElse, saTarget, saLabel, saDoWhile, saEndWhile,
+        saToFor, saDoFor, saEndFor
       );
     private
       SS: TStackRec<String>;
@@ -88,6 +89,8 @@ type
       procedure SkipStatement;
       procedure SkipAssign;
       procedure SkipIf;
+      procedure SkipWhile;
+      procedure SkipFor;
       function SkipCodes: TCodeList;
     end;
 implementation
@@ -121,7 +124,7 @@ end;
 procedure TSyntaxLine.DoAction(Act: TSemanticAction; TokenVal: String);
 var
   L, R, Temp: String;
-  P1, P2: Integer;
+  P1, P2, L1: Integer;
 begin
   case Act of
     saId, saNum, saStr:
@@ -161,6 +164,49 @@ begin
         P1 := SS.Pop.ToInteger;
         P2 := Codes.Add('j', '', '', '');
         SS.Push(P2.ToString);
+        Codes[P1].Target := Length(Codes).ToString;
+      end;
+    saLabel:
+      SS.Push(Length(Codes).ToString);
+
+    saDoWhile:
+      begin
+        P1 := Codes.Add('JF', SS.Pop, '', '');
+        SS.Push(P1.ToString);
+      end;
+
+    saEndWhile:
+      begin
+        P1 := SS.Pop.ToInteger;
+        L1 := SS.Pop.ToInteger;
+        Codes.Add('J', '', '', L1.ToString);
+        Codes[P1].Target := Length(Codes).ToString;
+      end;
+    saToFor:
+      begin
+        R := SS.Pop;
+        L := SS.Peek;
+        Codes.Add(':=', R, '', L);
+      end;
+
+    saDoFor:
+      begin
+        R := SS.Pop;
+        L := SS.Peek;
+        Temp := NewTemp;
+        L1 := Codes.Add('<=', L, R, Temp);
+        P1 := Codes.Add('JF', Temp, '', '');
+        SS.Push(L1.ToString);
+        SS.Push(P1.ToString);
+      end;
+
+    saEndFor:
+      begin
+        P1 := SS.Pop.ToInteger;
+        L1 := SS.Pop.ToInteger;
+        R := SS.Pop;
+        Codes.Add('Inc', R, '', '');
+        Codes.Add('J', '', '', L1.ToString);
         Codes[P1].Target := Length(Codes).ToString;
       end;
   end;
@@ -879,6 +925,21 @@ begin
   Result:= SS.Pop;
 end;
 
+procedure TSyntaxLine.SkipFor;
+begin
+  SkipKey('for');
+  DoAction(saId, SkipId);
+  SkipSep(':=');
+  SkipExp;
+  SkipKey('to');
+  DoAction(saToFor);
+  SkipExp;
+  SkipSep('do');
+  DoAction(saDoFor);
+  SkipStatement;
+  DoAction(saEndFor);
+end;
+
 function TSyntaxLine.SkipId: string;
 begin
   if IsId then
@@ -1022,13 +1083,17 @@ end;
 
 procedure TSyntaxLine.SkipStatement;
 begin
-  case WhichIs(['$if', '#id']) of
+  case WhichIs(['$if', '$while', '$for', '#id']) of
     0:
       SkipIf;
     1:
+      SkipWhile;
+    2:
+      SkipFor;
+    3:
       SkipAssign;
   else
-    SyntaxError('Statement expected: if , id');
+    SyntaxError('Statement expected: if, while, for, id');
   end;
 end;
 
@@ -1091,6 +1156,17 @@ begin
   Result := '';
   while IsUnread do
     Result := Result + JumpTo(NewPos);
+end;
+
+procedure TSyntaxLine.SkipWhile;
+begin
+  SkipKey('while');
+  DoAction(saLabel);
+  SkipExp;
+  SkipKey('do');
+  DoAction(saDoWhile);
+  SkipStatement;
+  DoAction(saEndWhile);
 end;
 
 procedure TSyntaxLine.SyntaxError(Msg: string);

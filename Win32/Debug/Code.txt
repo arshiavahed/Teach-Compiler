@@ -1,3 +1,18 @@
+while (S > B) and (S <= 2 * B - 5) do
+  S := S + B
+
+while S <= 10 do
+  if B = 1 then S := S + 1
+  else S := S + 2
+
+for i := 3 * A + 1 to 2 * N - 5 do
+  S := S + 1
+
+for i := A + 1 to N - 1 do
+  for j := B + 1 to N - 1 do
+    S := S + 1
+
+
 if 2 * A <= B then
   S := X + Y / 2
 

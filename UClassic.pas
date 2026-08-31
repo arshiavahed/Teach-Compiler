@@ -52,13 +52,10 @@ var
 implementation
 
 {$R *.dfm}
-
 uses
   USyntaxLine, IOUtils;
-
 var
   Inp: TSyntaxLine;
-
 procedure TFClassic.BtnCodeClick(Sender: TObject);
 begin
   MemoOut.Lines.Clear;

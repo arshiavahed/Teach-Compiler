@@ -21,6 +21,7 @@ object FClassic: TFClassic
     Height = 40
     Align = alTop
     TabOrder = 0
+    ExplicitWidth = 982
     object BtnSave: TButton
       Left = 1
       Top = 1
@@ -60,6 +61,7 @@ object FClassic: TFClassic
     Height = 572
     Align = alLeft
     TabOrder = 1
+    ExplicitHeight = 563
     object BtnCode: TButton
       Left = 1
       Top = 361
@@ -69,9 +71,6 @@ object FClassic: TFClassic
       Caption = 'Code'
       TabOrder = 0
       OnClick = BtnCodeClick
-      ExplicitLeft = 64
-      ExplicitTop = 272
-      ExplicitWidth = 75
     end
     object BtnTranslator: TButton
       Left = 1
@@ -82,8 +81,6 @@ object FClassic: TFClassic
       Caption = 'Translator'
       TabOrder = 1
       OnClick = BtnTranslatorClick
-      ExplicitLeft = 2
-      ExplicitTop = 9
     end
     object BtnParser: TButton
       Left = 1
@@ -94,8 +91,6 @@ object FClassic: TFClassic
       Caption = 'Parser'
       TabOrder = 2
       OnClick = BtnParserClick
-      ExplicitLeft = 2
-      ExplicitTop = 9
     end
     object BtnDecision: TButton
       Left = 1
@@ -106,8 +101,6 @@ object FClassic: TFClassic
       Caption = 'Decision'
       TabOrder = 3
       OnClick = BtnDecisionClick
-      ExplicitLeft = 2
-      ExplicitTop = 9
     end
     object BtnIrregular: TButton
       Left = 1
@@ -118,8 +111,6 @@ object FClassic: TFClassic
       Caption = 'Irregular'
       TabOrder = 4
       OnClick = BtnIrregularClick
-      ExplicitLeft = 2
-      ExplicitTop = 9
     end
     object BtnStr: TButton
       Left = 1
@@ -130,8 +121,6 @@ object FClassic: TFClassic
       Caption = 'Str'
       TabOrder = 5
       OnClick = BtnStrClick
-      ExplicitLeft = 2
-      ExplicitTop = 9
     end
     object BtnNum: TButton
       Left = 1
@@ -142,8 +131,6 @@ object FClassic: TFClassic
       Caption = 'Num'
       TabOrder = 6
       OnClick = BtnNumClick
-      ExplicitLeft = 2
-      ExplicitTop = 9
     end
     object BtnInt: TButton
       Left = 1
@@ -154,8 +141,6 @@ object FClassic: TFClassic
       Caption = 'Int'
       TabOrder = 7
       OnClick = BtnIntClick
-      ExplicitLeft = 2
-      ExplicitTop = 9
     end
     object BtnId: TButton
       Left = 1
@@ -166,8 +151,6 @@ object FClassic: TFClassic
       Caption = 'Id'
       TabOrder = 8
       OnClick = BtnIdClick
-      ExplicitLeft = 2
-      ExplicitTop = 9
     end
     object BtnUnread: TButton
       Left = 1
@@ -178,8 +161,6 @@ object FClassic: TFClassic
       Caption = 'Unread'
       TabOrder = 9
       OnClick = BtnUnreadClick
-      ExplicitLeft = 2
-      ExplicitTop = 9
     end
   end
   object PanelClient: TPanel
@@ -189,6 +170,8 @@ object FClassic: TFClassic
     Height = 572
     Align = alClient
     TabOrder = 2
+    ExplicitWidth = 872
+    ExplicitHeight = 563
     object MemoInp: TMemo
       Left = 1
       Top = 1
@@ -207,6 +190,7 @@ object FClassic: TFClassic
       ScrollBars = ssVertical
       TabOrder = 0
       WordWrap = False
+      ExplicitHeight = 561
     end
     object MemoOut: TMemo
       Left = 433
@@ -226,10 +210,8 @@ object FClassic: TFClassic
       ScrollBars = ssVertical
       TabOrder = 1
       WordWrap = False
-      ExplicitLeft = 1
-      ExplicitTop = 287
-      ExplicitWidth = 876
-      ExplicitHeight = 284
+      ExplicitWidth = 438
+      ExplicitHeight = 561
     end
   end
 end
