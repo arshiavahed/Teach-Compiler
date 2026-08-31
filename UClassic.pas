@@ -39,6 +39,7 @@ type
     procedure BtnDecisionClick(Sender: TObject);
     procedure BtnParserClick(Sender: TObject);
     procedure BtnTranslatorClick(Sender: TObject);
+    procedure BtnCodeClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -57,6 +58,13 @@ uses
 
 var
   Inp: TSyntaxLine;
+
+procedure TFClassic.BtnCodeClick(Sender: TObject);
+begin
+  MemoOut.Lines.Clear;
+  MemoOut.Lines.Add('Codes =');
+  MemoOut.Lines.AddStrings(Inp.SkipCodes.ToLines);
+end;
 
 procedure TFClassic.BtnDecisionClick(Sender: TObject);
 var

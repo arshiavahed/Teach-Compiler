@@ -16,6 +16,16 @@ type
     function Peek: T; inline;
   end;
 
+  TCode= record
+    Op, Addr1, Addr2, Target: String;
+  end;
+
+  TCodeList= array of TCode;
+  HCodeList= record helper for TCodeList
+    function Add(Op, Addr1, Addr2, Target: String): Integer;
+    function ToLines: TStrList;
+  end;
+
   TSyntaxLine = record
   private const
     EofCh = #1;
@@ -60,7 +70,20 @@ type
     // Translator
     function SkipDepth: Integer;
     function SkipExpVal: Double;
-  end;
+    // Code
+    private type
+      TSemanticAction= (saId, saNum, saStr, saAdd, saSub, saMul, saDiv, saOr, saAnd,
+        saLess, saEqual, saGreat, saLessEq, saNotEq, saGreatEq, saNeg, saNot);
+    private
+      SS: TStackRec<String>;
+      Codes: TCodeList;
+      TempNo: Integer;
+      function NewTemp: string;
+      procedure DoAction(Act: TSemanticAction; TokenVal: string= '');
+    public
+      procedure SkipExp;
+      function SkipCodes: TCodeList;
+    end;
 implementation
 
 uses Math;
@@ -87,6 +110,30 @@ begin
       Break;
 
   Result := Copy(Text, p1 + 1, p2 - p1 - 1);
+end;
+
+procedure TSyntaxLine.DoAction(Act: TSemanticAction; TokenVal: String);
+var
+  L, R, Temp: String;
+begin
+  case Act of
+    saId, saNum, saStr:
+      SS.Push(TokenVal);
+    saAdd..saGreatEq:
+      begin
+        R:= SS.Pop;
+        L:= SS.Pop;
+        Temp:= NewTemp;
+        Codes.Add(TokenVal, L, R, Temp);
+        SS.Push(Temp);
+      end;
+    saNeg, saNot:
+      begin
+        Temp:= NewTemp;
+        Codes.Add(TokenVal, SS.Pop, '', Temp);
+        SS.Push(Temp);
+      end;
+  end;
 end;
 
 function TSyntaxLine.InList(L: TStrList): Boolean;
@@ -395,6 +442,12 @@ begin
   Text := TFile.ReadAllText(FName) + EofCh;
 end;
 
+function TSyntaxLine.NewTemp: string;
+begin
+  Inc(TempNo);
+  Result:= 'T' + TempNo.ToString;
+end;
+
 procedure TSyntaxLine.SetText(L: string);
 begin
   Clear;
@@ -420,6 +473,14 @@ begin
     Result := SkipKey(Copy(Any, 2))
   else
     Result := SkipSep(Any);
+end;
+
+function TSyntaxLine.SkipCodes: TCodeList;
+begin
+  Codes := nil;
+  TempNo := 0;
+  SkipExp;
+  Result := Codes;
 end;
 
 function TSyntaxLine.SkipDepth: Integer;
@@ -490,6 +551,172 @@ function TSyntaxLine.SkipDepth: Integer;
 begin
   SkipS;
   Result := SS.Pop;
+end;
+
+procedure TSyntaxLine.SkipExp;
+
+  procedure SkipC; forward;
+  procedure SkipC1; forward;
+  procedure SkipA; forward;
+  procedure SkipA1; forward;
+  procedure SkipM; forward;
+  procedure SkipM1; forward;
+  procedure SkipP; forward;
+
+  procedure SkipC;
+  begin
+    SkipA;
+    SkipC1;
+  end;
+
+  procedure SkipC1;
+  begin
+    case WhichIs(['<=', '<>', '>=', '<', '=', '>']) of
+      0:
+        begin
+          SkipSep('<=');
+          SkipA;
+          DoAction(saLessEq, '<=');
+        end;
+      1:
+        begin
+          SkipSep('<>');
+          SkipA;
+          DoAction(saNotEq, '<>');
+        end;
+      2:
+        begin
+          SkipSep('>=');
+          SkipA;
+          DoAction(saGreatEq, '>=');
+        end;
+      3:
+        begin
+          SkipSep('<');
+          SkipA;
+          DoAction(saLess, '<');
+        end;
+      4:
+        begin
+          SkipSep('=');
+          SkipA;
+          DoAction(saEqual, '=');
+        end;
+      5:
+        begin
+          SkipSep('>');
+          SkipA;
+          DoAction(saGreat, '>');
+        end;
+    else
+      { null };
+    end;
+  end;
+
+  procedure SkipA;
+  begin
+    SkipM;
+    SkipA1;
+  end;
+
+  procedure SkipA1;
+  begin
+    case WhichIs(['+', '-', '$or']) of
+      0:
+        begin
+          SkipSep('+');
+          SkipM;
+          DoAction(saAdd, '+');
+          SkipA1;
+        end;
+      1:
+        begin
+          SkipSep('-');
+          SkipM;
+          DoAction(saSub, '-');
+          SkipA1;
+        end;
+      2:
+        begin
+          SkipKey('or');
+          SkipM;
+          DoAction(saOr, 'or');
+          SkipA1;
+        end;
+    else
+      { null };
+    end;
+  end;
+
+  procedure SkipM;
+  begin
+    SkipP;
+    SkipM1;
+  end;
+
+  procedure SkipM1;
+  begin
+    case WhichIs(['*', '/', '$and']) of
+      0:
+        begin
+          SkipSep('*');
+          SkipP;
+          DoAction(saMul, '*');
+          SkipM1;
+        end;
+      1:
+        begin
+          SkipSep('/');
+          SkipP;
+          DoAction(saDiv, '/');
+          SkipM1;
+        end;
+      2:
+        begin
+          SkipKey('and');
+          SkipP;
+          DoAction(saAnd, 'and');
+          SkipM1;
+        end;
+    else
+      { null };
+    end;
+  end;
+
+  procedure SkipP;
+  begin
+    case WhichIs(['-', '$not', '(', '#id', '#num', '#str']) of
+      0:
+        begin
+          SkipSep('-');
+          SkipP;
+          DoAction(saNeg, 'neg');
+        end;
+      1:
+        begin
+          SkipKey('not');
+          SkipP;
+          DoAction(saNot, 'not');
+        end;
+      2:
+        begin
+          SkipSep('(');
+          SkipC;
+          SkipSep(')');
+        end;
+      3:
+        DoAction(saId, SkipId);
+      4:
+        DoAction(saNum, SkipNum.ToString);
+      5:
+        DoAction(saStr, SkipStrQuot);
+    else
+      SyntaxError('"-", not, (, id, num, str expected');
+    end;
+  end;
+
+begin
+  SkipC;
 end;
 
 function TSyntaxLine.SkipExpVal: Double;
@@ -840,6 +1067,33 @@ end;
 procedure TStackRec<T>.Push(const Value: T);
 begin
   Stk.Push(Value);
+end;
+
+{ HCodeList }
+
+function HCodeList.Add(Op, Addr1, Addr2, Target: String): Integer;
+var
+  ACode: TCode;
+begin
+  ACode.Op:= Op;
+  ACode.Addr1:= Addr1;
+  ACode.Addr2:= Addr2;
+  ACode.Target:= Target;
+
+  Self:= Self+ [ACode];
+  Result:= High(Self);
+end;
+
+function HCodeList.ToLines: TStrList;
+var
+  i: Integer;
+  S: String;
+begin
+  for i:= 0 to High(Self) do
+  begin
+    S:= string.Join(', ', [Self[i].Op, Self[i].Addr1, Self[i].Addr2, Self[i].Target]);
+    Result:= Result+ ['['+ FormatFloat('00', i)+']' + '('+ S+ ')'];
+  end;
 end;
 
 end.

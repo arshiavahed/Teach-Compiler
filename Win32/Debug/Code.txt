@@ -1,0 +1,5 @@
+A * (B - (3 - D)) / (B + 2 * - 5) + C
+A * (- 5 + C) / ((D + - 7) * - (F - 12))
+
+A or not (B or not C) and D
+B and (C / - A * 2 + A = 14) and not D

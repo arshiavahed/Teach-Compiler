@@ -68,6 +68,7 @@ object FClassic: TFClassic
       Align = alTop
       Caption = 'Code'
       TabOrder = 0
+      OnClick = BtnCodeClick
       ExplicitLeft = 64
       ExplicitTop = 272
       ExplicitWidth = 75
