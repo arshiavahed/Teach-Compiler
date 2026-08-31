@@ -29,6 +29,9 @@ type
     function SkipInt: Integer;
     function IsNum: Boolean;
     function SkipNum: Double;
+    function IsStr: Boolean;
+    function SkipStrQuot: string;
+    function SkipStrVal: string;
   end;
 implementation
 
@@ -186,6 +189,61 @@ begin
     NewPos := p;
 end;
 
+function TSyntaxLine.IsStr: Boolean;
+var
+  p, State: Integer;
+begin
+  SkipUnread;
+  State := 0;
+
+  for p := Pos to High(Text) do
+    case State of
+      0:
+        if Text[p] = '''' then
+          State := 1
+        else if Text[p] = '#' then
+          State := 3
+        else
+          Break;
+
+      1:
+        if Text[p] = '''' then
+          State := 2
+        else if Text[p] in [#10, #13] then
+          Break
+        else
+          State := 1;
+
+      2:
+        if Text[p] = '''' then
+          State := 1
+        else if Text[p] = '#' then
+          State := 3
+        else
+          Break;
+
+      3:
+        if Text[p].IsDigit then
+          State := 4
+        else
+          Break;
+
+      4:
+        if Text[p] = '''' then
+          State := 1
+        else if Text[p] = '#' then
+          State := 3
+        else if Text[p].IsDigit then
+          State := 4
+        else
+          Break;
+    end;
+
+  Result := State in [2, 4];
+  if Result then
+    NewPos := p;
+end;
+
 function TSyntaxLine.IsUnread: Boolean;
 var
   P, State: Integer;
@@ -294,6 +352,19 @@ begin
     Result := JumpTo(NewPos).ToDouble
   else
     SyntaxError('Invalid number');
+end;
+
+function TSyntaxLine.SkipStrQuot: string;
+begin
+  if IsStr then
+    Result := JumpTo(NewPos)
+  else
+    SyntaxError('Invalid string');
+end;
+
+function TSyntaxLine.SkipStrVal: string;
+begin
+  { TODO : For Future }
 end;
 
 function TSyntaxLine.SkipUnread: string;

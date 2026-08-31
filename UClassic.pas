@@ -34,6 +34,7 @@ type
     procedure BtnIdClick(Sender: TObject);
     procedure BtnIntClick(Sender: TObject);
     procedure BtnNumClick(Sender: TObject);
+    procedure BtnStrClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -99,6 +100,11 @@ procedure TFClassic.BtnSaveClick(Sender: TObject);
 begin
   MemoInp.Lines.SaveToFile(ComboInp.Text);
   Inp.LoadFile(ComboInp.Text);
+end;
+
+procedure TFClassic.BtnStrClick(Sender: TObject);
+begin
+  MemoOut.Lines.Text:= Inp.SkipStrQuot;
 end;
 
 procedure TFClassic.BtnUnreadClick(Sender: TObject);
