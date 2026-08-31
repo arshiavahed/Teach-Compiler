@@ -36,6 +36,7 @@ type
     procedure BtnNumClick(Sender: TObject);
     procedure BtnStrClick(Sender: TObject);
     procedure BtnIrregularClick(Sender: TObject);
+    procedure BtnDecisionClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -54,6 +55,57 @@ uses
 
 var
   Inp: TSyntaxLine;
+
+procedure TFClassic.BtnDecisionClick(Sender: TObject);
+var
+  S: String;
+begin
+  case Inp.WhichIs(['$if', '$while', '$for', '#id']) of
+
+    0:
+      begin
+        S := Inp.SkipKey('if');
+        S := S + ' ' + Inp.SkipId;
+        S := S + ' ' + Inp.SkipSep('!=');
+        S := S + ' ' + Inp.SkipId;
+        S := S + ' ' + Inp.SkipKey('then');
+      end;
+
+    1:
+      begin
+        S := Inp.SkipKey('while');
+        S := S + ' ' + Inp.SkipId;
+        S := S + ' ' + Inp.SkipSep('=');
+        S := S + ' ' + Inp.SkipId;
+        S := S + ' ' + Inp.SkipKey('do');
+      end;
+
+    2:
+      begin
+        S := Inp.SkipKey('for');
+        S := S + ' ' + Inp.SkipId;
+        S := S + ' ' + Inp.SkipSep(':=');
+        S := S + ' ' + Inp.SkipId;
+        S := S + ' ' + Inp.SkipKey('to');
+        S := S + ' ' + Inp.SkipId;
+        S := S + ' ' + Inp.SkipKey('do');
+      end;
+
+    3:
+      begin
+        S := Inp.SkipId;
+        S := S + ' ' + Inp.SkipSep(':=');
+        S := S + ' ' + Inp.SkipId;
+        S := S + ' ' + Inp.SkipSep('+');
+        S := S + ' ' + Inp.SkipId;
+      end;
+
+  else
+    Inp.SyntaxError('if , while , for , id Expected');
+  end;
+
+  MemoOut.Lines.Text := S;
+end;
 
 procedure TFClassic.BtnIdClick(Sender: TObject);
 begin

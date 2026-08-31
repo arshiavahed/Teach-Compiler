@@ -5,6 +5,8 @@ interface
 uses Dialogs, SysUtils, IOUtils, Character, Types, Generics.Collections;
 
 type
+  TStrList = array of string;
+
   TSyntaxLine = record
   private const
     EofCh = #1;
@@ -40,6 +42,9 @@ type
     // Advanced
     function IsNext(Any: string): Boolean;
     function Skip(Any: string): string;
+    // Advanced
+    function WhichIs(L: TStrList): Integer;
+    function InList(L: TStrList): Boolean;
   end;
 implementation
 
@@ -65,6 +70,11 @@ begin
       Break;
 
   Result := Copy(Text, p1 + 1, p2 - p1 - 1);
+end;
+
+function TSyntaxLine.InList(L: TStrList): Boolean;
+begin
+  Result := WhichIs(L) <> -1;
 end;
 
 function TSyntaxLine.IsEof: Boolean;
@@ -465,6 +475,18 @@ begin
 
   MessageDlg(Msg + #10#10 + Ln + #10 + Ch + #10 + Pt, mtError, [mbOK], 0);
   Abort;
+end;
+
+function TSyntaxLine.WhichIs(L: TStrList): Integer;
+var
+  i: Integer;
+begin
+  SkipUnread;
+
+  Result := -1;
+  for i := 0 to High(L) do
+    if IsNext(L[i]) then
+      Exit(i);
 end;
 
 end.

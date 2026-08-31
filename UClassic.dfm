@@ -102,6 +102,7 @@ object FClassic: TFClassic
       Align = alTop
       Caption = 'Decision'
       TabOrder = 3
+      OnClick = BtnDecisionClick
       ExplicitLeft = 2
       ExplicitTop = 9
     end
