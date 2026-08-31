@@ -30,6 +30,7 @@ type
     procedure BtnSaveClick(Sender: TObject);
     procedure ComboInpChange(Sender: TObject);
     procedure BtnRunClick(Sender: TObject);
+    procedure BtnUnreadClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -80,6 +81,11 @@ procedure TFClassic.BtnSaveClick(Sender: TObject);
 begin
   MemoInp.Lines.SaveToFile(ComboInp.Text);
   Inp.LoadFile(ComboInp.Text);
+end;
+
+procedure TFClassic.BtnUnreadClick(Sender: TObject);
+begin
+  MemoOut.Lines.Text:= Inp.SkipUnread;
 end;
 
 procedure TFClassic.ComboInpChange(Sender: TObject);

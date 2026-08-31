@@ -168,6 +168,7 @@ object FClassic: TFClassic
       Align = alTop
       Caption = 'Unread'
       TabOrder = 9
+      OnClick = BtnUnreadClick
       ExplicitLeft = 2
       ExplicitTop = 9
     end

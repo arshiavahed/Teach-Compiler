@@ -20,6 +20,9 @@ type
     function IsEof: Boolean;
     function CurrentLine: string;
     procedure SyntaxError(Msg: string);
+    // Regular
+    function IsUnread: Boolean;
+    function SkipUnread: string;
   end;
 implementation
 
@@ -52,6 +55,61 @@ begin
   Result := (Pos > High(Text)) or (Text[Pos] = EofCh);
 end;
 
+function TSyntaxLine.IsUnread: Boolean;
+var
+  P, State: Integer;
+begin
+  //  SkipUnread;
+  State := 0;
+
+  for P := Pos to High(Text) do
+    case State of
+      0:
+        if Text[p] = '/' then
+          State := 1
+        else if Text[p].IsWhiteSpace then
+          State := 5
+        else
+          Break;
+      1:
+        if Text[p] = '*' then
+          State := 2
+        else if Text[p] = '/' then
+          State := 6
+        else
+          Break;
+      2:
+        if Text[p] = '*' then
+          State := 3
+        else
+          State := 2;
+      3:
+        if Text[p] = '*' then
+          State := 3
+        else if Text[p] = '/' then
+          State := 4
+        else
+          State := 2;
+      4:
+        Break;
+      5:
+        if Text[p].IsWhiteSpace then
+          State := 5
+        else
+          Break;
+      6:
+        if Text[p] in [#10, #13] then
+          State := 7
+        else
+          State := 6;
+      7:
+        Break;
+    end;
+
+  Result := State in [4, 5, 7];
+  if Result then NewPos := P;
+end;
+
 function TSyntaxLine.JumpTo(APos: Integer): string;
 begin
   Result := '';
@@ -81,6 +139,13 @@ procedure TSyntaxLine.SetText(L: string);
 begin
   Clear;
   Text := L + EofCh;
+end;
+
+function TSyntaxLine.SkipUnread: string;
+begin
+  Result := '';
+  while IsUnread do
+    Result := Result + JumpTo(NewPos);
 end;
 
 procedure TSyntaxLine.SyntaxError(Msg: string);
